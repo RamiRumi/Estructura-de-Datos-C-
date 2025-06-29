@@ -1,0 +1,974 @@
+1.	Escribir un programa que pida al usuario una palabra y muestre por pantalla el número de veces que contiene cada vocal.
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+namespace ContadorVocales
+{
+    /// <summary>
+    /// Clase que representa el resultado del conteo de una vocal específica
+    /// </summary>
+    public class ResultadoVocal
+    {
+        public char Vocal { get; set; }
+        public int Cantidad { get; set; }
+        public List<int> Posiciones { get; set; }
+
+        public ResultadoVocal(char vocal)
+        {
+            Vocal = vocal;
+            Cantidad = 0;
+            Posiciones = new List<int>();
+        }
+
+        public override string ToString()
+        {
+            return $"'{Vocal}': {Cantidad} vez(es) - Posiciones: [{string.Join(", ", Posiciones)}]";
+        }
+    }
+
+    /// <summary>
+    /// Clase principal para el análisis de vocales en palabras
+    /// </summary>
+    public class AnalizadorVocales
+    {
+        private readonly char[] VOCALES = { 'a', 'e', 'i', 'o', 'u' };
+        private string palabraOriginal;
+        private string palabraNormalizada;
+        private Dictionary<char, ResultadoVocal> resultados;
+
+        public AnalizadorVocales()
+        {
+            resultados = new Dictionary<char, ResultadoVocal>();
+            InicializarResultados();
+        }
+
+        /// <summary>
+        /// Inicializa el diccionario de resultados con las vocales
+        /// </summary>
+        private void InicializarResultados()
+        {
+            foreach (char vocal in VOCALES)
+            {
+                resultados[vocal] = new ResultadoVocal(vocal);
+            }
+        }
+
+        /// <summary>
+        /// Normaliza la palabra eliminando acentos y convirtiéndola a minúsculas
+        /// </summary>
+        private string NormalizarPalabra(string palabra)
+        {
+            if (string.IsNullOrWhiteSpace(palabra))
+                throw new ArgumentException("La palabra no puede estar vacía o ser nula");
+
+            // Eliminar acentos y caracteres especiales
+            string normalizada = palabra.ToLower();
+            normalizada = Regex.Replace(normalizada, "[áàäâ]", "a");
+            normalizada = Regex.Replace(normalizada, "[éèëê]", "e");
+            normalizada = Regex.Replace(normalizada, "[íìïî]", "i");
+            normalizada = Regex.Replace(normalizada, "[óòöô]", "o");
+            normalizada = Regex.Replace(normalizada, "[úùüû]", "u");
+
+            return normalizada;
+        }
+
+        /// <summary>
+        /// Analiza una palabra y cuenta las vocales
+        /// </summary>
+        public void AnalizarPalabra(string palabra)
+        {
+            palabraOriginal = palabra;
+            palabraNormalizada = NormalizarPalabra(palabra);
+            
+            // Limpiar resultados anteriores
+            foreach (var resultado in resultados.Values)
+            {
+                resultado.Cantidad = 0;
+                resultado.Posiciones.Clear();
+            }
+
+            // Contar vocales y registrar posiciones
+            for (int i = 0; i < palabraNormalizada.Length; i++)
+            {
+                char caracter = palabraNormalizada[i];
+                if (resultados.ContainsKey(caracter))
+                {
+                    resultados[caracter].Cantidad++;
+                    resultados[caracter].Posiciones.Add(i + 1);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Muestra el análisis completo de la palabra
+        /// </summary>
+        public void MostrarAnalisis()
+        {
+            Console.WriteLine("═══════════════════════════════════════");
+            Console.WriteLine("         ANÁLISIS DE VOCALES");
+            Console.WriteLine("═══════════════════════════════════════");
+            Console.WriteLine($"Palabra original: \"{palabraOriginal}\"");
+            Console.WriteLine($"Palabra normalizada: \"{palabraNormalizada}\"");
+            Console.WriteLine($"Longitud: {palabraNormalizada.Length} caracteres");
+            Console.WriteLine();
+
+            int totalVocales = resultados.Values.Sum(r => r.Cantidad);
+            Console.WriteLine($"Total de vocales encontradas: {totalVocales}");
+            Console.WriteLine();
+
+            Console.WriteLine("Detalle por vocal:");
+            Console.WriteLine("───────────────────────────────────────");
+            
+            foreach (var resultado in resultados.Values.OrderBy(r => r.Vocal))
+            {
+                Console.WriteLine(resultado.ToString());
+            }
+
+            Console.WriteLine();
+            MostrarEstadisticas();
+        }
+
+        /// <summary>
+        /// Muestra estadísticas adicionales del análisis
+        /// </summary>
+        private void MostrarEstadisticas()
+        {
+            var vocalMasFrecuente = resultados.Values.OrderByDescending(r => r.Cantidad).First();
+            var vocalesEncontradas = resultados.Values.Count(r => r.Cantidad > 0);
+            var vocalesNoEncontradas = resultados.Values.Count(r => r.Cantidad == 0);
+
+            Console.WriteLine("Estadísticas:");
+            Console.WriteLine("───────────────────────────────────────");
+            Console.WriteLine($"Vocal más frecuente: '{vocalMasFrecuente.Vocal}' ({vocalMasFrecuente.Cantidad} veces)");
+            Console.WriteLine($"Vocales encontradas: {vocalesEncontradas}/5");
+            Console.WriteLine($"Vocales no encontradas: {vocalesNoEncontradas}/5");
+            
+            if (vocalesNoEncontradas > 0)
+            {
+                var vocalesFaltantes = resultados.Values.Where(r => r.Cantidad == 0).Select(r => r.Vocal);
+                Console.WriteLine($"Vocales faltantes: {string.Join(", ", vocalesFaltantes)}");
+            }
+        }
+
+        /// <summary>
+        /// Obtiene el resultado del análisis como diccionario
+        /// </summary>
+        public Dictionary<char, int> ObtenerResultados()
+        {
+            return resultados.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Cantidad);
+        }
+    }
+
+    /// <summary>
+    /// Clase principal del programa
+    /// </summary>
+    public class Program
+    {
+        public static void Main(string[] args)
+        {
+            try
+            {
+                AnalizadorVocales analizador = new AnalizadorVocales();
+                
+                Console.WriteLine("CONTADOR DE VOCALES EN PALABRAS");
+                Console.WriteLine("================================");
+                Console.Write("Ingrese una palabra: ");
+                
+                string palabraIngresada = Console.ReadLine();
+                
+                if (string.IsNullOrWhiteSpace(palabraIngresada))
+                {
+                    Console.WriteLine("Error: Debe ingresar una palabra válida.");
+                    return;
+                }
+
+                analizador.AnalizarPalabra(palabraIngresada);
+                analizador.MostrarAnalisis();
+
+                Console.WriteLine("\nPresione cualquier tecla para salir...");
+                Console.ReadKey();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error: {ex.Message}");
+                Console.WriteLine("Presione cualquier tecla para salir...");
+                Console.ReadKey();
+            }
+        }
+    }
+}
+
+2.	Escribir un programa que almacene en una lista los números del 1 al 10 y los muestre por pantalla en orden inverso separados por comas.
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
+namespace NumerosOrdenInverso
+{
+    /// <summary>
+    /// Enumeración para definir tipos de ordenamiento
+    /// </summary>
+    public enum TipoOrdenamiento
+    {
+        Ascendente,
+        Descendente,
+        Aleatorio
+    }
+
+    /// <summary>
+    /// Clase que representa una colección de números con operaciones avanzadas
+    /// </summary>
+    public class ColeccionNumerica
+    {
+        private List<int> numeros;
+        private readonly int rangoInicio;
+        private readonly int rangoFin;
+
+        public List<int> Numeros => new List<int>(numeros); // Retorna una copia para evitar modificaciones externas
+        public int Cantidad => numeros.Count;
+        public int RangoInicio => rangoInicio;
+        public int RangoFin => rangoFin;
+
+        /// <summary>
+        /// Constructor que inicializa la colección con un rango específico
+        /// </summary>
+        public ColeccionNumerica(int inicio = 1, int fin = 10)
+        {
+            if (inicio > fin)
+                throw new ArgumentException("El valor de inicio no puede ser mayor que el valor final");
+
+            rangoInicio = inicio;
+            rangoFin = fin;
+            numeros = new List<int>();
+            InicializarColeccion();
+        }
+
+        /// <summary>
+        /// Inicializa la colección con números del rango especificado
+        /// </summary>
+        private void InicializarColeccion()
+        {
+            numeros.Clear();
+            for (int i = rangoInicio; i <= rangoFin; i++)
+            {
+                numeros.Add(i);
+            }
+        }
+
+        /// <summary>
+        /// Ordena la colección según el tipo especificado
+        /// </summary>
+        public void Ordenar(TipoOrdenamiento tipo)
+        {
+            switch (tipo)
+            {
+                case TipoOrdenamiento.Ascendente:
+                    numeros.Sort();
+                    break;
+                case TipoOrdenamiento.Descendente:
+                    numeros.Sort((x, y) => y.CompareTo(x));
+                    break;
+                case TipoOrdenamiento.Aleatorio:
+                    OrdenarAleatoriamente();
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Ordena la colección de forma aleatoria usando el algoritmo Fisher-Yates
+        /// </summary>
+        private void OrdenarAleatoriamente()
+        {
+            Random random = new Random();
+            for (int i = numeros.Count - 1; i > 0; i--)
+            {
+                int j = random.Next(0, i + 1);
+                int temp = numeros[i];
+                numeros[i] = numeros[j];
+                numeros[j] = temp;
+            }
+        }
+
+        /// <summary>
+        /// Invierte el orden actual de la colección
+        /// </summary>
+        public void InvertirOrden()
+        {
+            numeros.Reverse();
+        }
+
+        /// <summary>
+        /// Obtiene la colección como string con el separador especificado
+        /// </summary>
+        public string ObtenerComoString(string separador = ", ")
+        {
+            return string.Join(separador, numeros);
+        }
+
+        /// <summary>
+        /// Obtiene estadísticas básicas de la colección
+        /// </summary>
+        public EstadisticasNumericas ObtenerEstadisticas()
+        {
+            return new EstadisticasNumericas(numeros);
+        }
+
+        /// <summary>
+        /// Restablece la colección a su estado inicial
+        /// </summary>
+        public void Restablecer()
+        {
+            InicializarColeccion();
+        }
+
+        /// <summary>
+        /// Muestra la colección con formato específico
+        /// </summary>
+        public void MostrarColeccion(string titulo = "Colección Numérica")
+        {
+            Console.WriteLine($"╔═══ {titulo} ═══╗");
+            Console.WriteLine($"║ Rango: {rangoInicio} - {rangoFin}");
+            Console.WriteLine($"║ Cantidad: {Cantidad} elementos");
+            Console.WriteLine($"║ Elementos: {ObtenerComoString()}");
+            Console.WriteLine("╚" + new string('═', titulo.Length + 8) + "╝");
+        }
+    }
+
+    /// <summary>
+    /// Clase para calcular y almacenar estadísticas numéricas
+    /// </summary>
+    public class EstadisticasNumericas
+    {
+        public double Promedio { get; private set; }
+        public int Minimo { get; private set; }
+        public int Maximo { get; private set; }
+        public double Mediana { get; private set; }
+        public int Suma { get; private set; }
+
+        public EstadisticasNumericas(List<int> numeros)
+        {
+            if (numeros == null || numeros.Count == 0)
+                throw new ArgumentException("La lista no puede estar vacía");
+
+            CalcularEstadisticas(numeros);
+        }
+
+        private void CalcularEstadisticas(List<int> numeros)
+        {
+            Suma = numeros.Sum();
+            Promedio = numeros.Average();
+            Minimo = numeros.Min();
+            Maximo = numeros.Max();
+
+            var numerosOrdenados = numeros.OrderBy(x => x).ToList();
+            int medio = numerosOrdenados.Count / 2;
+            
+            if (numerosOrdenados.Count % 2 == 0)
+                Mediana = (numerosOrdenados[medio - 1] + numerosOrdenados[medio]) / 2.0;
+            else
+                Mediana = numerosOrdenados[medio];
+        }
+
+        public void MostrarEstadisticas()
+        {
+            Console.WriteLine("╔══════ ESTADÍSTICAS ══════╗");
+            Console.WriteLine($"║ Suma:     {Suma,10} ║");
+            Console.WriteLine($"║ Promedio: {Promedio,10:F2} ║");
+            Console.WriteLine($"║ Mínimo:   {Minimo,10} ║");
+            Console.WriteLine($"║ Máximo:   {Maximo,10} ║");
+            Console.WriteLine($"║ Mediana:  {Mediana,10:F2} ║");
+            Console.WriteLine("╚═══════════════════════════╝");
+        }
+    }
+
+    /// <summary>
+    /// Clase principal del programa
+    /// </summary>
+    public class Program
+    {
+        public static void Main(string[] args)
+        {
+            try
+            {
+                Console.WriteLine("GENERADOR Y MANIPULADOR DE SECUENCIAS NUMÉRICAS");
+                Console.WriteLine("================================================");
+
+                // Crear colección del 1 al 10
+                ColeccionNumerica coleccion = new ColeccionNumerica(1, 10);
+
+                // Mostrar colección original
+                Console.WriteLine("\n1. COLECCIÓN ORIGINAL:");
+                coleccion.MostrarColeccion("Números del 1 al 10");
+
+                // Mostrar en orden inverso (principal requerimiento)
+                Console.WriteLine("\n2. ORDEN INVERSO (REQUERIMIENTO PRINCIPAL):");
+                coleccion.InvertirOrden();
+                coleccion.MostrarColeccion("Orden Inverso");
+                
+                Console.WriteLine($"\nResultado separado por comas: {coleccion.ObtenerComoString()}");
+
+                // Funcionalidades adicionales
+                Console.WriteLine("\n3. FUNCIONALIDADES ADICIONALES:");
+                
+                // Restablecer y mostrar otras ordenaciones
+                coleccion.Restablecer();
+                coleccion.Ordenar(TipoOrdenamiento.Aleatorio);
+                coleccion.MostrarColeccion("Orden Aleatorio");
+
+                // Mostrar estadísticas
+                Console.WriteLine("\n4. ANÁLISIS ESTADÍSTICO:");
+                coleccion.Restablecer();
+                var estadisticas = coleccion.ObtenerEstadisticas();
+                estadisticas.MostrarEstadisticas();
+
+                // Demostrar diferentes separadores
+                Console.WriteLine("\n5. DIFERENTES FORMATOS DE SALIDA:");
+                Console.WriteLine($"Con guiones: {coleccion.ObtenerComoString(" - ")}");
+                Console.WriteLine($"Con puntos: {coleccion.ObtenerComoString(" • ")}");
+                Console.WriteLine($"Con espacios: {coleccion.ObtenerComoString(" ")}");
+
+                // Resultado final requerido
+                Console.WriteLine("\n" + new string('=', 50));
+                Console.WriteLine("RESULTADO FINAL DEL EJERCICIO:");
+                coleccion.InvertirOrden();
+                Console.WriteLine($"Números del 1 al 10 en orden inverso: {coleccion.ObtenerComoString()}");
+                Console.WriteLine(new string('=', 50));
+
+                Console.WriteLine("\nPresione cualquier tecla para salir...");
+                Console.ReadKey();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error: {ex.Message}");
+                Console.WriteLine("Presione cualquier tecla para salir...");
+                Console.ReadKey();
+            }
+        }
+    }
+}
+
+3.	Escribir un programa que almacene las asignaturas de un curso (por ejemplo: Matemática, Física, Química, Informatica y Ingles) en una lista y la muestre por pantalla.
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace GestorAsignaturas
+{
+    public class Asignatura
+    {
+        public string Nombre { get; private set; }
+        public string Codigo { get; private set; }
+        public int CreditosAcademicos { get; private set; }
+
+        public Asignatura(string nombre, string codigo, int creditosAcademicos)
+        {
+            if (string.IsNullOrWhiteSpace(nombre))
+                throw new ArgumentException("El nombre de la asignatura no puede estar vacío.");
+            
+            if (string.IsNullOrWhiteSpace(codigo))
+                throw new ArgumentException("El código de la asignatura no puede estar vacío.");
+            
+            if (creditosAcademicos <= 0)
+                throw new ArgumentException("Los créditos académicos deben ser mayores a cero.");
+
+            Nombre = nombre.Trim();
+            Codigo = codigo.Trim().ToUpper();
+            CreditosAcademicos = creditosAcademicos;
+        }
+
+        public override string ToString()
+        {
+            return $"{Codigo} - {Nombre} ({CreditosAcademicos} créditos)";
+        }
+    }
+
+    public class GestorCurso
+    {
+        private List<Asignatura> _asignaturas;
+        public string NombreCurso { get; private set; }
+
+        public GestorCurso(string nombreCurso)
+        {
+            if (string.IsNullOrWhiteSpace(nombreCurso))
+                throw new ArgumentException("El nombre del curso no puede estar vacío.");
+            
+            NombreCurso = nombreCurso.Trim();
+            _asignaturas = new List<Asignatura>();
+            InicializarAsignaturas();
+        }
+
+        private void InicializarAsignaturas()
+        {
+            _asignaturas.AddRange(new List<Asignatura>
+            {
+                new Asignatura("Matemática", "MAT101", 39),
+                new Asignatura("Física", "FIS101", 42),
+                new Asignatura("Programacion orienta a objetos", "POO101", 45),
+                new Asignatura("Sistemas oOperativos", "SO101", 40),
+                new Asignatura("Fundamentos de las tecnologias de la informacion", "FTI101", 36)
+            });
+        }
+
+        public void AgregarAsignatura(Asignatura asignatura)
+        {
+            if (asignatura == null)
+                throw new ArgumentNullException(nameof(asignatura));
+
+            if (_asignaturas.Any(a => a.Codigo == asignatura.Codigo))
+                throw new InvalidOperationException($"Ya existe una asignatura con el código {asignatura.Codigo}");
+
+            _asignaturas.Add(asignatura);
+        }
+
+        public void MostrarAsignaturas()
+        {
+            Console.WriteLine($"\n=== ASIGNATURAS DEL CURSO: {NombreCurso.ToUpper()} ===");
+            Console.WriteLine(new string('=', 50));
+            
+            for (int i = 0; i < _asignaturas.Count; i++)
+            {
+                Console.WriteLine($"{i + 1:D2}. {_asignaturas[i]}");
+            }
+            
+            MostrarResumen();
+        }
+
+        private void MostrarResumen()
+        {
+            Console.WriteLine(new string('-', 50));
+            Console.WriteLine($"Total de asignaturas: {_asignaturas.Count}");
+            Console.WriteLine($"Total de créditos: {_asignaturas.Sum(a => a.CreditosAcademicos)}");
+            Console.WriteLine($"Promedio de créditos por asignatura: {_asignaturas.Average(a => a.CreditosAcademicos):F1}");
+        }
+
+        public List<Asignatura> ObtenerAsignaturas()
+        {
+            return new List<Asignatura>(_asignaturas);
+        }
+
+        public void MostrarAsignaturasPorCreditos()
+        {
+            Console.WriteLine("\n=== ASIGNATURAS ORDENADAS POR CRÉDITOS ===");
+            var asignaturasOrdenadas = _asignaturas.OrderByDescending(a => a.CreditosAcademicos).ToList();
+            
+            foreach (var asignatura in asignaturasOrdenadas)
+            {
+                Console.WriteLine($"• {asignatura}");
+            }
+        }
+    }
+
+    public class Program
+    {
+        public static void Main(string[] args)
+        {
+            try
+            {
+                GestorCurso gestor = new GestorCurso("Ingeniería en Tecnologias de la Informacion y Comunicacion - Primer Semestre");
+                
+                gestor.MostrarAsignaturas();
+                gestor.MostrarAsignaturasPorCreditos();
+
+                Console.WriteLine("\nPresione cualquier tecla para continuar...");
+                Console.ReadKey();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error: {ex.Message}");
+                Console.ReadKey();
+            }
+        }
+    }
+}
+
+4.	Escribir un programa que almacene los vectores (1,2,3) y (-1,0,2) en dos listas y muestre por pantalla su producto escalar.
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace ProductoEscalar
+{
+    public class Vector3D
+    {
+        private List<double> _componentes;
+        
+        public double X => _componentes[0];
+        public double Y => _componentes[1];
+        public double Z => _componentes[2];
+        
+        public Vector3D(double x, double y, double z)
+        {
+            _componentes = new List<double> { x, y, z };
+        }
+        
+        public Vector3D(List<double> componentes)
+        {
+            if (componentes == null)
+                throw new ArgumentNullException(nameof(componentes));
+            
+            if (componentes.Count != 3)
+                throw new ArgumentException("El vector debe tener exactamente 3 componentes.");
+            
+            _componentes = new List<double>(componentes);
+        }
+        
+        public List<double> ObtenerComponentes()
+        {
+            return new List<double>(_componentes);
+        }
+        
+        public double CalcularMagnitud()
+        {
+            return Math.Sqrt(_componentes.Sum(c => c * c));
+        }
+        
+        public Vector3D Normalizar()
+        {
+            double magnitud = CalcularMagnitud();
+            if (magnitud == 0)
+                throw new InvalidOperationException("No se puede normalizar un vector nulo.");
+            
+            return new Vector3D(
+                _componentes[0] / magnitud,
+                _componentes[1] / magnitud,
+                _componentes[2] / magnitud
+            );
+        }
+        
+        public override string ToString()
+        {
+            return $"({X}, {Y}, {Z})";
+        }
+        
+        public string ToStringDetallado()
+        {
+            return $"Vector3D: ({X:F2}i, {Y:F2}j, {Z:F2}k) | Magnitud: {CalcularMagnitud():F2}";
+        }
+    }
+    
+    public class CalculadoraVectorial
+    {
+        public static double CalcularProductoEscalar(Vector3D vector1, Vector3D vector2)
+        {
+            if (vector1 == null || vector2 == null)
+                throw new ArgumentNullException("Los vectores no pueden ser nulos.");
+            
+            var comp1 = vector1.ObtenerComponentes();
+            var comp2 = vector2.ObtenerComponentes();
+            
+            double productoEscalar = 0;
+            for (int i = 0; i < comp1.Count; i++)
+            {
+                productoEscalar += comp1[i] * comp2[i];
+            }
+            
+            return productoEscalar;
+        }
+        
+        public static Vector3D CalcularProductoVectorial(Vector3D vector1, Vector3D vector2)
+        {
+            if (vector1 == null || vector2 == null)
+                throw new ArgumentNullException("Los vectores no pueden ser nulos.");
+            
+            double x = vector1.Y * vector2.Z - vector1.Z * vector2.Y;
+            double y = vector1.Z * vector2.X - vector1.X * vector2.Z;
+            double z = vector1.X * vector2.Y - vector1.Y * vector2.X;
+            
+            return new Vector3D(x, y, z);
+        }
+        
+        public static double CalcularAnguloEntreVectores(Vector3D vector1, Vector3D vector2)
+        {
+            double productoEscalar = CalcularProductoEscalar(vector1, vector2);
+            double magnitud1 = vector1.CalcularMagnitud();
+            double magnitud2 = vector2.CalcularMagnitud();
+            
+            if (magnitud1 == 0 || magnitud2 == 0)
+                throw new InvalidOperationException("No se puede calcular el ángulo con vectores nulos.");
+            
+            double coseno = productoEscalar / (magnitud1 * magnitud2);
+            // Asegurar que el valor esté en el rango [-1, 1] por errores de precisión
+            coseno = Math.Max(-1, Math.Min(1, coseno));
+            
+            return Math.Acos(coseno);
+        }
+    }
+    
+    public class Program
+    {
+        public static void Main(string[] args)
+        {
+            try
+            {
+                Console.WriteLine("=== CALCULADORA DE PRODUCTO ESCALAR ===");
+                
+                // Crear los vectores especificados
+                Vector3D vector1 = new Vector3D(1, 2, 3);
+                Vector3D vector2 = new Vector3D(-1, 0, 2);
+                
+                Console.WriteLine("Vectores definidos:");
+                Console.WriteLine($"Vector A: {vector1.ToStringDetallado()}");
+                Console.WriteLine($"Vector B: {vector2.ToStringDetallado()}");
+                
+                // Calcular producto escalar
+                double productoEscalar = CalculadoraVectorial.CalcularProductoEscalar(vector1, vector2);
+                Console.WriteLine($"\n=== RESULTADO ===");
+                Console.WriteLine($"Producto escalar (A · B): {productoEscalar}");
+                
+                // Información adicional
+                Console.WriteLine("\n=== INFORMACIÓN ADICIONAL ===");
+                
+                // Producto vectorial
+                Vector3D productoVectorial = CalculadoraVectorial.CalcularProductoVectorial(vector1, vector2);
+                Console.WriteLine($"Producto vectorial (A × B): {productoVectorial}");
+                
+                // Ángulo entre vectores
+                double angulo = CalculadoraVectorial.CalcularAnguloEntreVectores(vector1, vector2);
+                double anguloGrados = angulo * 180 / Math.PI;
+                Console.WriteLine($"Ángulo entre vectores: {angulo:F4} radianes ({anguloGrados:F2}°)");
+                
+                // Interpretación del resultado
+                Console.WriteLine("\n=== INTERPRETACIÓN ===");
+                if (productoEscalar > 0)
+                    Console.WriteLine("• Los vectores forman un ángulo agudo (< 90°)");
+                else if (productoEscalar < 0)
+                    Console.WriteLine("• Los vectores forman un ángulo obtuso (> 90°)");
+                else
+                    Console.WriteLine("• Los vectores son perpendiculares (90°)");
+                
+                Console.WriteLine("\nPresione cualquier tecla para continuar...");
+                Console.ReadKey();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error: {ex.Message}");
+                Console.ReadKey();
+            }
+        }
+    }
+}
+
+5.	Escribir un programa que almacene en una lista los siguientes precios, 50, 75, 46, 22, 80, 65, 8, y muestre por pantalla el menor y el mayor de los precios.
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace AnalizadorPrecios
+{
+    public class Producto
+    {
+        public int Id { get; private set; }
+        public string Nombre { get; private set; }
+        public decimal Precio { get; private set; }
+        public DateTime FechaRegistro { get; private set; }
+
+        public Producto(int id, string nombre, decimal precio)
+        {
+            if (precio < 0)
+                throw new ArgumentException("El precio no puede ser negativo.");
+            
+            if (string.IsNullOrWhiteSpace(nombre))
+                throw new ArgumentException("El nombre del producto no puede estar vacío.");
+
+            Id = id;
+            Nombre = nombre.Trim();
+            Precio = precio;
+            FechaRegistro = DateTime.Now;
+        }
+
+        public override string ToString()
+        {
+            return $"ID: {Id:D3} | {Nombre,-15} | ${Precio,6:F2}";
+        }
+    }
+
+    public class AnalizadorPrecios
+    {
+        private List<decimal> _precios;
+        private List<Producto> _productos;
+
+        public AnalizadorPrecios()
+        {
+            _precios = new List<decimal>();
+            _productos = new List<Producto>();
+        }
+
+        public void AgregarPrecios(params decimal[] precios)
+        {
+            if (precios == null || precios.Length == 0)
+                throw new ArgumentException("Se debe proporcionar al menos un precio.");
+
+            foreach (decimal precio in precios)
+            {
+                if (precio < 0)
+                    throw new ArgumentException($"El precio {precio} no puede ser negativo.");
+                
+                _precios.Add(precio);
+            }
+        }
+
+        public void AgregarProductos()
+        {
+            string[] nombresProductos = 
+            {
+                "Producto A", "Producto B", "Producto C", "Producto D",
+                "Producto E", "Producto F", "Producto G"
+            };
+
+            _productos.Clear();
+            for (int i = 0; i < _precios.Count && i < nombresProductos.Length; i++)
+            {
+                _productos.Add(new Producto(i + 1, nombresProductos[i], _precios[i]));
+            }
+        }
+
+        public decimal ObtenerPrecioMinimo()
+        {
+            if (!_precios.Any())
+                throw new InvalidOperationException("No hay precios para analizar.");
+            
+            return _precios.Min();
+        }
+
+        public decimal ObtenerPrecioMaximo()
+        {
+            if (!_precios.Any())
+                throw new InvalidOperationException("No hay precios para analizar.");
+            
+            return _precios.Max();
+        }
+
+        public Producto ObtenerProductoMasBarato()
+        {
+            if (!_productos.Any())
+                throw new InvalidOperationException("No hay productos para analizar.");
+            
+            return _productos.OrderBy(p => p.Precio).First();
+        }
+
+        public Producto ObtenerProductoMasCaro()
+        {
+            if (!_productos.Any())
+                throw new InvalidOperationException("No hay productos para analizar.");
+            
+            return _productos.OrderByDescending(p => p.Precio).First();
+        }
+
+        public void MostrarAnalisisCompleto()
+        {
+            if (!_precios.Any())
+            {
+                Console.WriteLine("No hay precios para mostrar.");
+                return;
+            }
+
+            Console.WriteLine("=== ANÁLISIS COMPLETO DE PRECIOS ===");
+            Console.WriteLine(new string('=', 50));
+            
+            MostrarListaPrecios();
+            MostrarEstadisticas();
+            MostrarProductos();
+        }
+
+        private void MostrarListaPrecios()
+        {
+            Console.WriteLine("\nLista de precios:");
+            Console.WriteLine($"[{string.Join(", ", _precios.Select(p => $"${p:F2}"))}]");
+        }
+
+        private void MostrarEstadisticas()
+        {
+            Console.WriteLine("\n=== ESTADÍSTICAS ===");
+            Console.WriteLine($"Precio mínimo: ${ObtenerPrecioMinimo():F2}");
+            Console.WriteLine($"Precio máximo: ${ObtenerPrecioMaximo():F2}");
+            Console.WriteLine($"Precio promedio: ${_precios.Average():F2}");
+            Console.WriteLine($"Precio mediano: ${ObtenerMediana():F2}");
+            Console.WriteLine($"Rango de precios: ${ObtenerPrecioMaximo() - ObtenerPrecioMinimo():F2}");
+            Console.WriteLine($"Cantidad total de productos: {_precios.Count}");
+        }
+
+        private decimal ObtenerMediana()
+        {
+            var preciosOrdenados = _precios.OrderBy(p => p).ToList();
+            int count = preciosOrdenados.Count;
+            
+            if (count % 2 == 0)
+            {
+                return (preciosOrdenados[count / 2 - 1] + preciosOrdenados[count / 2]) / 2;
+            }
+            else
+            {
+                return preciosOrdenados[count / 2];
+            }
+        }
+
+        private void MostrarProductos()
+        {
+            if (!_productos.Any()) return;
+
+            Console.WriteLine("\n=== LISTADO DE PRODUCTOS ===");
+            foreach (var producto in _productos.OrderBy(p => p.Precio))
+            {
+                Console.WriteLine(producto);
+            }
+
+            Console.WriteLine("\n=== PRODUCTOS DESTACADOS ===");
+            var productoMasBarato = ObtenerProductoMasBarato();
+            var productoMasCaro = ObtenerProductoMasCaro();
+            
+            Console.WriteLine($"🏷️  MÁS BARATO: {productoMasBarato.Nombre} - ${productoMasBarato.Precio:F2}");
+            Console.WriteLine($"💎 MÁS CARO:   {productoMasCaro.Nombre} - ${productoMasCaro.Precio:F2}");
+            
+            decimal diferencia = productoMasCaro.Precio - productoMasBarato.Precio;
+            Console.WriteLine($"💰 DIFERENCIA:  ${diferencia:F2}");
+        }
+
+        public List<Producto> ObtenerProductosEnRango(decimal precioMin, decimal precioMax)
+        {
+            return _productos.Where(p => p.Precio >= precioMin && p.Precio <= precioMax).ToList();
+        }
+    }
+
+    public class Program
+    {
+        public static void Main(string[] args)
+        {
+            try
+            {
+                AnalizadorPrecios analizador = new AnalizadorPrecios();
+                
+                // Agregar los precios especificados en el ejercicio
+                decimal[] preciosEjercicio = { 50, 75, 46, 22, 80, 65, 8 };
+                analizador.AgregarPrecios(preciosEjercicio);
+                analizador.AgregarProductos();
+                
+                analizador.MostrarAnalisisCompleto();
+                
+                // Funcionalidad adicional
+                Console.WriteLine("\n=== ANÁLISIS ADICIONAL ===");
+                var productosRangoMedio = analizador.ObtenerProductosEnRango(40, 70);
+                Console.WriteLine($"\nProductos en rango medio ($40-$70): {productosRangoMedio.Count}");
+                foreach (var producto in productosRangoMedio)
+                {
+                    Console.WriteLine($"  • {producto}");
+                }
+
+                Console.WriteLine("\nPresione cualquier tecla para continuar...");
+                Console.ReadKey();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error: {ex.Message}");
+                Console.ReadKey();
+            }
+        }
+    }
+}

@@ -1,0 +1,327 @@
+3. Implementar el método de búsqueda en la clase lista, el cual debe retornar el número de cual debe retornar el número de
+veces que se encuentra el dato dentro veces que se encuentra el dato dentro de la lista. de la lista. En caso de no encontrarse, el método d En caso de no encontrarse, el método debe
+mostrar un mensaje indicando que el dato mostrar un mensaje indicando que el dato no fue enc no fue encontrado. El parámetro de entrada del ontrado. El parámetro de entrada del
+método es el valor que método es el valor que se desea buscar. 
+
+
+using System;
+
+// Definición del nodo para la lista enlazada
+public class Nodo
+{
+    public int Dato { get; set; }
+    public Nodo Siguiente { get; set; }
+
+    public Nodo(int dato)
+    {
+        Dato = dato;
+        Siguiente = null;
+    }
+}
+
+// Clase Lista Enlazada
+public class ListaEnlazada
+{
+    private Nodo cabeza;
+
+    public ListaEnlazada()
+    {
+        cabeza = null;
+    }
+
+    // Método para agregar un elemento al final de la lista
+    public void Agregar(int dato)
+    {
+        Nodo nuevoNodo = new Nodo(dato);
+        
+        if (cabeza == null)
+        {
+            cabeza = nuevoNodo;
+        }
+        else
+        {
+            Nodo actual = cabeza;
+            while (actual.Siguiente != null)
+            {
+                actual = actual.Siguiente;
+            }
+            actual.Siguiente = nuevoNodo;
+        }
+    }
+
+    // EJERCICIO 3: Método de búsqueda que retorna el número de veces que se encuentra el dato
+    public int Buscar(int valorBuscado)
+    {
+        int contador = 0;
+        Nodo actual = cabeza;
+        
+        while (actual != null)
+        {
+            if (actual.Dato == valorBuscado)
+            {
+                contador++;
+            }
+            actual = actual.Siguiente;
+        }
+        
+        if (contador == 0)
+        {
+            Console.WriteLine($"El dato {valorBuscado} no fue encontrado en la lista.");
+        }
+        
+        return contador;
+    }
+
+    // Método para mostrar la lista
+    public void MostrarLista()
+    {
+        if (cabeza == null)
+        {
+            Console.WriteLine("La lista está vacía.");
+            return;
+        }
+        
+        Nodo actual = cabeza;
+        Console.Write("Lista: ");
+        while (actual != null)
+        {
+            Console.Write(actual.Dato + " ");
+            actual = actual.Siguiente;
+        }
+        Console.WriteLine();
+    }
+
+    // Método para verificar si la lista está vacía
+    public bool EstaVacia()
+    {
+        return cabeza == null;
+    }
+}
+
+// Clase principal para demostrar el funcionamiento
+public class Program
+{
+    public static void Main()
+    {
+        Console.WriteLine("=== EJERCICIO 3: MÉTODO DE BÚSQUEDA ===\n");
+        
+        ListaEnlazada lista = new ListaEnlazada();
+        
+        // Agregar algunos datos de prueba con repeticiones
+        int[] datos = { 5, 3, 8, 3, 1, 7, 3, 9, 2, 3 };
+        foreach (int dato in datos)
+        {
+            lista.Agregar(dato);
+        }
+        
+        Console.WriteLine("Lista creada:");
+        lista.MostrarLista();
+        
+        // Probar búsquedas
+        Console.WriteLine("\n--- PRUEBAS DE BÚSQUEDA ---");
+        
+        // Buscar un valor que aparece varias veces
+        int valorBuscado1 = 3;
+        int vecesEncontrado1 = lista.Buscar(valorBuscado1);
+        Console.WriteLine($"El número {valorBuscado1} se encontró {vecesEncontrado1} veces.");
+        
+        // Buscar un valor que aparece una vez
+        int valorBuscado2 = 7;
+        int vecesEncontrado2 = lista.Buscar(valorBuscado2);
+        Console.WriteLine($"El número {valorBuscado2} se encontró {vecesEncontrado2} veces.");
+        
+        // Buscar un valor que no existe
+        int valorBuscado3 = 15;
+        int vecesEncontrado3 = lista.Buscar(valorBuscado3);
+        Console.WriteLine($"El número {valorBuscado3} se encontró {vecesEncontrado3} veces.");
+        
+        Console.WriteLine("\nPresione cualquier tecla para salir...");
+        Console.ReadKey();
+    }
+}
+
+
+
+
+4. Crear una lista enlazada con 50 números enteros, del 1 al 999 generados aleatoriamente. Una
+vez creada la lista, vez creada la lista, se deben eliminar los nodos qu se deben eliminar los nodos que estén fuera de un r e estén fuera de un rango de valores leídos ango de valores leídos
+desde el teclado.
+
+
+
+
+using System;
+
+// Definición del nodo para la lista enlazada
+public class Nodo
+{
+    public int Dato { get; set; }
+    public Nodo Siguiente { get; set; }
+
+    public Nodo(int dato)
+    {
+        Dato = dato;
+        Siguiente = null;
+    }
+}
+
+// Clase Lista Enlazada
+public class ListaEnlazada
+{
+    private Nodo cabeza;
+
+    public ListaEnlazada()
+    {
+        cabeza = null;
+    }
+
+    // Método para agregar un elemento al final de la lista
+    public void Agregar(int dato)
+    {
+        Nodo nuevoNodo = new Nodo(dato);
+        
+        if (cabeza == null)
+        {
+            cabeza = nuevoNodo;
+        }
+        else
+        {
+            Nodo actual = cabeza;
+            while (actual.Siguiente != null)
+            {
+                actual = actual.Siguiente;
+            }
+            actual.Siguiente = nuevoNodo;
+        }
+    }
+
+    // EJERCICIO 4: Método para eliminar nodos fuera del rango especificado
+    public void EliminarFueraDeRango(int rangoInferior, int rangoSuperior)
+    {
+        // Eliminar nodos al inicio de la lista que estén fuera del rango
+        while (cabeza != null && (cabeza.Dato < rangoInferior || cabeza.Dato > rangoSuperior))
+        {
+            cabeza = cabeza.Siguiente;
+        }
+        
+        // Si la lista quedó vacía, salir
+        if (cabeza == null)
+        {
+            Console.WriteLine("Todos los elementos fueron eliminados. La lista está vacía.");
+            return;
+        }
+        
+        // Eliminar nodos en el resto de la lista
+        Nodo actual = cabeza;
+        while (actual.Siguiente != null)
+        {
+            if (actual.Siguiente.Dato < rangoInferior || actual.Siguiente.Dato > rangoSuperior)
+            {
+                actual.Siguiente = actual.Siguiente.Siguiente;
+            }
+            else
+            {
+                actual = actual.Siguiente;
+            }
+        }
+    }
+
+    // Método para mostrar la lista
+    public void MostrarLista()
+    {
+        if (cabeza == null)
+        {
+            Console.WriteLine("La lista está vacía.");
+            return;
+        }
+        
+        Nodo actual = cabeza;
+        Console.Write("Lista: ");
+        while (actual != null)
+        {
+            Console.Write(actual.Dato + " ");
+            actual = actual.Siguiente;
+        }
+        Console.WriteLine();
+    }
+
+    // Método para obtener el tamaño de la lista
+    public int ObtenerTamaño()
+    {
+        int tamaño = 0;
+        Nodo actual = cabeza;
+        while (actual != null)
+        {
+            tamaño++;
+            actual = actual.Siguiente;
+        }
+        return tamaño;
+    }
+
+    // Método para verificar si la lista está vacía
+    public bool EstaVacia()
+    {
+        return cabeza == null;
+    }
+}
+
+// Clase principal para demostrar el funcionamiento
+public class Program
+{
+    public static void Main()
+    {
+        Console.WriteLine("=== EJERCICIO 4: ELIMINACIÓN FUERA DE RANGO ===\n");
+        
+        ListaEnlazada lista = new ListaEnlazada();
+        Random random = new Random();
+        
+        // Crear lista con 50 números aleatorios del 1 al 999
+        Console.WriteLine("Creando lista con 50 números aleatorios del 1 al 999...");
+        for (int i = 0; i < 50; i++)
+        {
+            lista.Agregar(random.Next(1, 1000));
+        }
+        
+        Console.WriteLine("\nLista original:");
+        lista.MostrarLista();
+        Console.WriteLine($"Tamaño original: {lista.ObtenerTamaño()} elementos");
+        
+        // Definir rango para mantener (por ejemplo, entre 100 y 500)
+        int rangoInferior = 100;
+        int rangoSuperior = 500;
+        
+        Console.WriteLine($"\nEliminando elementos fuera del rango [{rangoInferior}, {rangoSuperior}]...");
+        lista.EliminarFueraDeRango(rangoInferior, rangoSuperior);
+        
+        Console.WriteLine("\nLista después de eliminar elementos fuera del rango:");
+        lista.MostrarLista();
+        Console.WriteLine($"Tamaño después de filtrar: {lista.ObtenerTamaño()} elementos");
+        
+        // Demostración adicional con otro rango
+        Console.WriteLine("\n" + new string('=', 50));
+        Console.WriteLine("DEMOSTRACIÓN CON OTRO RANGO:");
+        
+        // Crear nueva lista para otra demostración
+        ListaEnlazada lista2 = new ListaEnlazada();
+        int[] datosTest = { 10, 50, 150, 250, 350, 450, 550, 750, 850, 950 };
+        foreach (int dato in datosTest)
+        {
+            lista2.Agregar(dato);
+        }
+        
+        Console.WriteLine("\nLista de prueba:");
+        lista2.MostrarLista();
+        
+        // Aplicar rango [200, 400]
+        int nuevoRangoInf = 200;
+        int nuevoRangoSup = 400;
+        Console.WriteLine($"Aplicando rango [{nuevoRangoInf}, {nuevoRangoSup}]...");
+        lista2.EliminarFueraDeRango(nuevoRangoInf, nuevoRangoSup);
+        
+        Console.WriteLine("Lista después del filtrado:");
+        lista2.MostrarLista();
+        
+        Console.WriteLine("\nPresione cualquier tecla para salir...");
+        Console.ReadKey();
+    }
+}

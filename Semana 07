@@ -1,0 +1,125 @@
+Verificación de paréntesis balanceados en una expresión matemática
+
+using System;
+using System.Collections.Generic;
+
+namespace BalanceoParentesis
+{
+    class Program
+    {
+        static bool EstaBalanceado(string expresion)
+        {
+            Stack<char> pila = new Stack<char>();
+            Dictionary<char, char> pares = new Dictionary<char, char>
+            {
+                {')', '('},
+                {']', '['},
+                {'}', '{'}
+            };
+
+            foreach (char c in expresion)
+            {
+                if (c == '(' || c == '[' || c == '{')
+                {
+                    pila.Push(c);
+                }
+                else if (c == ')' || c == ']' || c == '}')
+                {
+                    if (pila.Count == 0 || pila.Pop() != pares[c])
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return pila.Count == 0;
+        }
+
+        static void Main(string[] args)
+        {
+            Console.WriteLine("Ingrese la expresión matemática:");
+            string expresion = Console.ReadLine();
+            
+            if (EstaBalanceado(expresion))
+            {
+                Console.WriteLine("Fórmula balanceada.");
+            }
+            else
+            {
+                Console.WriteLine("Fórmula NO balanceada.");
+            }
+        }
+    }
+}
+
+
+
+
+Resolución del problema de las Torres de Hanoi
+
+
+using System;
+using System.Collections.Generic;
+
+namespace TorresHanoi
+{
+    class Program
+    {
+        static Stack<int> torreA = new Stack<int>();
+        static Stack<int> torreB = new Stack<int>();
+        static Stack<int> torreC = new Stack<int>();
+        static int movimientos = 0;
+
+        static void InicializarTorre(int discos)
+        {
+            for (int i = discos; i >= 1; i--)
+            {
+                torreA.Push(i);
+            }
+        }
+
+        static void MoverDisco(Stack<int> origen, Stack<int> destino, char origenChar, char destinoChar)
+        {
+            if (origen.Count > 0 && (destino.Count == 0 || origen.Peek() < destino.Peek()))
+            {
+                int disco = origen.Pop();
+                destino.Push(disco);
+                movimientos++;
+                Console.WriteLine($"Movimiento {movimientos}: Mover disco {disco} de {origenChar} a {destinoChar}");
+            }
+        }
+
+        static void ResolverHanoi(int n, Stack<int> origen, Stack<int> auxiliar, Stack<int> destino, char origenChar, char auxiliarChar, char destinoChar)
+        {
+            if (n > 0)
+            {
+                ResolverHanoi(n - 1, origen, destino, auxiliar, origenChar, destinoChar, auxiliarChar);
+                MoverDisco(origen, destino, origenChar, destinoChar);
+                ResolverHanoi(n - 1, auxiliar, origen, destino, auxiliarChar, origenChar, destinoChar);
+            }
+        }
+
+        static void MostrarTorres()
+        {
+            Console.WriteLine("\nEstado actual de las torres:");
+            Console.WriteLine($"Torre A: {string.Join(", ", torreA)}");
+            Console.WriteLine($"Torre B: {string.Join(", ", torreB)}");
+            Console.WriteLine($"Torre C: {string.Join(", ", torreC)}");
+        }
+
+        static void Main(string[] args)
+        {
+            Console.WriteLine("Ingrese el número de discos:");
+            int discos = int.Parse(Console.ReadLine());
+
+            InicializarTorre(discos);
+            MostrarTorres();
+
+            Console.WriteLine("\nIniciando solución...");
+            ResolverHanoi(discos, torreA, torreB, torreC, 'A', 'B', 'C');
+
+            Console.WriteLine($"\nProblema resuelto en {movimientos} movimientos.");
+            MostrarTorres();
+        }
+    }
+}

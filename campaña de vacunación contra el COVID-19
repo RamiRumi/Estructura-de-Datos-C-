@@ -1,0 +1,166 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace CampaniaVacunacionCOVID
+{
+    public class Ciudadano
+    {
+        public int Id { get; set; }
+        public string Nombre { get; set; }
+        public string TipoVacuna { get; set; } // "Pfizer", "AstraZeneca", "Ambas", o null si no vacunado
+        public bool TienePrimeraDosis { get; set; }
+        public bool TieneSegundaDosis { get; set; }
+
+        public Ciudadano(int id, string nombre)
+        {
+            Id = id;
+            Nombre = nombre;
+            TipoVacuna = null;
+            TienePrimeraDosis = false;
+            TieneSegundaDosis = false;
+        }
+
+        public override string ToString()
+        {
+            return $"{Nombre} (ID: {Id}) - Vacuna: {(TipoVacuna ?? "Ninguna")} - " +
+                   $"Dosis: {(TienePrimeraDosis ? "1ª" : "")}{(TienePrimeraDosis && TieneSegundaDosis ? " y " : "")}{(TieneSegundaDosis ? "2ª" : "")}";
+        }
+    }
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            Console.WriteLine("=== SISTEMA DE GESTIÓN DE VACUNACIÓN COVID-19 ===\n");
+
+            // Crear conjunto de 500 ciudadanos
+            var todosCiudadanos = GenerarCiudadanos(500);
+            Console.WriteLine($"Total de ciudadanos registrados: {todosCiudadanos.Count}");
+
+            // Crear conjuntos de vacunados
+            var vacunadosPfizer = SeleccionarYVacunarCiudadanos(todosCiudadanos, 75, "Pfizer");
+            var vacunadosAstraZeneca = SeleccionarYVacunarCiudadanos(todosCiudadanos, 75, "AstraZeneca");
+
+            // Aplicar operaciones de teoría de conjuntos
+            var noVacunados = ObtenerNoVacunados(todosCiudadanos, vacunadosPfizer, vacunadosAstraZeneca);
+            var ambasDosis = ObtenerCiudadanosConAmbasDosis(todosCiudadanos);
+            var soloPfizer = ObtenerSoloPfizer(vacunadosPfizer, vacunadosAstraZeneca);
+            var soloAstraZeneca = ObtenerSoloAstraZeneca(vacunadosPfizer, vacunadosAstraZeneca);
+
+            // Mostrar resultados
+            MostrarResultado("CIUDADANOS NO VACUNADOS", noVacunados);
+            MostrarResultado("CIUDADANOS CON AMBAS DOSIS", ambasDosis);
+            MostrarResultado("CIUDADANOS QUE SOLO RECIBIERON PFIZER", soloPfizer);
+            MostrarResultado("CIUDADANOS QUE SOLO RECIBIERON ASTRAZENECA", soloAstraZeneca);
+
+            // Mostrar estadísticas
+            MostrarEstadisticas(todosCiudadanos, noVacunados, ambasDosis, soloPfizer, soloAstraZeneca);
+
+            Console.WriteLine("\nPresione cualquier tecla para salir...");
+            Console.ReadKey();
+        }
+
+        static List<Ciudadano> GenerarCiudadanos(int cantidad)
+        {
+            var ciudadanos = new List<Ciudadano>();
+            for (int i = 1; i <= cantidad; i++)
+            {
+                ciudadanos.Add(new Ciudadano(i, $"Ciudadano {i}"));
+            }
+            return ciudadanos;
+        }
+
+        static List<Ciudadano> SeleccionarYVacunarCiudadanos(List<Ciudadano> ciudadanos, int cantidad, string tipoVacuna)
+        {
+            var random = new Random();
+            var seleccionados = new List<Ciudadano>();
+            var indicesUsados = new HashSet<int>();
+
+            while (seleccionados.Count < cantidad)
+            {
+                int index = random.Next(ciudadanos.Count);
+                if (!indicesUsados.Contains(index))
+                {
+                    var ciudadano = ciudadanos[index];
+                    
+                    // Verificar que el ciudadano no esté ya vacunado con otra vacuna
+                    if (ciudadano.TipoVacuna == null)
+                    {
+                        ciudadano.TipoVacuna = tipoVacuna;
+                        ciudadano.TienePrimeraDosis = true;
+                        
+                        // 60% de probabilidad de recibir segunda dosis
+                        if (random.NextDouble() < 0.6)
+                        {
+                            ciudadano.TieneSegundaDosis = true;
+                            if (tipoVacuna == "Pfizer") ciudadano.TipoVacuna = "Ambas (Pfizer)";
+                            else ciudadano.TipoVacuna = "Ambas (AstraZeneca)";
+                        }
+                        
+                        seleccionados.Add(ciudadano);
+                        indicesUsados.Add(index);
+                    }
+                }
+            }
+
+            return seleccionados;
+        }
+
+        static List<Ciudadano> ObtenerNoVacunados(List<Ciudadano> todos, List<Ciudadano> pfizer, List<Ciudadano> astraZeneca)
+        {
+            // Diferencia de conjuntos: Todos - (Pfizer ∪ AstraZeneca)
+            var vacunados = pfizer.Union(astraZeneca).ToList();
+            return todos.Except(vacunados).ToList();
+        }
+
+        static List<Ciudadano> ObtenerCiudadanosConAmbasDosis(List<Ciudadano> todos)
+        {
+            // Ciudadanos que tienen ambas dosis (independientemente de la vacuna)
+            return todos.Where(c => c.TienePrimeraDosis && c.TieneSegundaDosis).ToList();
+        }
+
+        static List<Ciudadano> ObtenerSoloPfizer(List<Ciudadano> pfizer, List<Ciudadano> astraZeneca)
+        {
+            // Diferencia de conjuntos: Pfizer - AstraZeneca
+            return pfizer.Except(astraZeneca).Where(c => !c.TieneSegundaDosis || c.TipoVacuna == "Pfizer").ToList();
+        }
+
+        static List<Ciudadano> ObtenerSoloAstraZeneca(List<Ciudadano> pfizer, List<Ciudadano> astraZeneca)
+        {
+            // Diferencia de conjuntos: AstraZeneca - Pfizer
+            return astraZeneca.Except(pfizer).Where(c => !c.TieneSegundaDosis || c.TipoVacuna == "AstraZeneca").ToList();
+        }
+
+        static void MostrarResultado(string titulo, List<Ciudadano> ciudadanos)
+        {
+            Console.WriteLine($"\n=== {titulo} ({ciudadanos.Count}) ===");
+            foreach (var ciudadano in ciudadanos.Take(10)) // Mostrar solo los primeros 10 para no saturar
+            {
+                Console.WriteLine(ciudadano);
+            }
+            
+            if (ciudadanos.Count > 10)
+            {
+                Console.WriteLine($"... y {ciudadanos.Count - 10} más");
+            }
+        }
+
+        static void MostrarEstadisticas(List<Ciudadano> todos, List<Ciudadano> noVacunados, 
+                                      List<Ciudadano> ambasDosis, List<Ciudadano> soloPfizer, 
+                                      List<Ciudadano> soloAstraZeneca)
+        {
+            Console.WriteLine("\n=== ESTADÍSTICAS ===");
+            Console.WriteLine($"Total ciudadanos: {todos.Count}");
+            Console.WriteLine($"No vacunados: {noVacunados.Count} ({noVacunados.Count * 100.0 / todos.Count:F1}%)");
+            Console.WriteLine($"Con ambas dosis: {ambasDosis.Count} ({ambasDosis.Count * 100.0 / todos.Count:F1}%)");
+            Console.WriteLine($"Solo Pfizer (1ª dosis): {soloPfizer.Count} ({soloPfizer.Count * 100.0 / todos.Count:F1}%)");
+            Console.WriteLine($"Solo AstraZeneca (1ª dosis): {soloAstraZeneca.Count} ({soloAstraZeneca.Count * 100.0 / todos.Count:F1}%)");
+            
+            // Verificación de integridad de datos
+            int totalCalculado = noVacunados.Count + ambasDosis.Count + soloPfizer.Count + soloAstraZeneca.Count;
+            Console.WriteLine($"Integridad de datos: {totalCalculado}/{todos.Count} " +
+                             $"({(totalCalculado == todos.Count ? "OK" : "ERROR")})");
+        }
+    }
+}

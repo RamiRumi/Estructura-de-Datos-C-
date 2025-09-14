@@ -1,0 +1,259 @@
+// Program.cs
+// Recomendado: dotnet 7+
+// Compilar / ejecutar:
+// dotnet new console -n CatalogoRevistas
+// Reemplazar Program.cs por este archivo
+// dotnet run
+
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
+
+namespace CatalogoRevistas
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            var catalog = new JournalCatalog();
+            catalog.SeedSampleData(); // agrega al menos 10 títulos
+
+            Console.WriteLine("=== Catálogo de Revistas — Búsqueda (C#) ===");
+            bool salir = false;
+            while (!salir)
+            {
+                Console.WriteLine();
+                Console.WriteLine("Menú:");
+                Console.WriteLine("1) Mostrar catálogo (orden actual)");
+                Console.WriteLine("2) Buscar título (búsqueda recursiva)");
+                Console.WriteLine("3) Buscar título (búsqueda iterativa - binaria)");
+                Console.WriteLine("4) Agregar título al catálogo");
+                Console.WriteLine("5) Ordenar catálogo (alfabético)");
+                Console.WriteLine("6) Guardar catálogo a archivo (catalogo.txt)");
+                Console.WriteLine("7) Salir");
+                Console.Write("Elige una opción (1-7): ");
+                var opt = Console.ReadLine();
+
+                switch (opt)
+                {
+                    case "1":
+                        catalog.PrintCatalog();
+                        break;
+                    case "2":
+                        Console.Write("Introduce el título a buscar (recursiva): ");
+                        var qRec = Console.ReadLine() ?? "";
+                        bool foundRec = catalog.RecursiveSearch(qRec);
+                        Console.WriteLine(foundRec ? "Encontrado" : "No encontrado");
+                        break;
+                    case "3":
+                        Console.Write("Introduce el título a buscar (iterativa - binaria): ");
+                        var qIt = Console.ReadLine() ?? "";
+                        // Para búsqueda binaria, el catálogo debe estar ordenado
+                        if (!catalog.IsSorted)
+                        {
+                            Console.WriteLine("El catálogo no está ordenado. Se ordenará temporalmente para la búsqueda binaria.");
+                            catalog.SortCatalog();
+                        }
+                        bool foundIt = catalog.IterativeBinarySearch(qIt);
+                        Console.WriteLine(foundIt ? "Encontrado" : "No encontrado");
+                        break;
+                    case "4":
+                        Console.Write("Ingresa nuevo título: ");
+                        var newTitle = Console.ReadLine() ?? "";
+                        if (string.IsNullOrWhiteSpace(newTitle))
+                        {
+                            Console.WriteLine("Título vacío — no se agregó.");
+                        }
+                        else
+                        {
+                            catalog.AddTitle(newTitle.Trim());
+                            Console.WriteLine("Título agregado.");
+                        }
+                        break;
+                    case "5":
+                        catalog.SortCatalog();
+                        Console.WriteLine("Catálogo ordenado alfabéticamente (ignorando acentos).");
+                        break;
+                    case "6":
+                        catalog.SaveToFile("catalogo.txt");
+                        Console.WriteLine("Catálogo guardado en catalogo.txt");
+                        break;
+                    case "7":
+                        salir = true;
+                        break;
+                    default:
+                        Console.WriteLine("Opción inválida. Intenta de nuevo.");
+                        break;
+                }
+            }
+
+            Console.WriteLine("Saliendo. ¡Hasta luego!");
+        }
+    }
+
+    /// <summary>
+    /// Clase que gestiona un catálogo de títulos de revistas.
+    /// Implementa búsqueda recursiva (lineal) y búsqueda iterativa (binaria).
+    /// También normaliza las cadenas para ignorar mayúsculas y acentos.
+    /// </summary>
+    public class JournalCatalog
+    {
+        private List<string> _titles = new List<string>();
+        private List<string> _normalizedCache = new List<string>(); // cache para búsquedas rápidas
+        public bool IsSorted { get; private set; } = false;
+
+        public JournalCatalog()
+        {
+        }
+
+        /// <summary>
+        /// Agrega un título y actualiza cache.
+        /// </summary>
+        public void AddTitle(string title)
+        {
+            _titles.Add(title);
+            _normalizedCache.Add(Normalize(title));
+            IsSorted = false;
+        }
+
+        /// <summary>
+        /// Llena el catálogo con ejemplos (al menos 10).
+        /// </summary>
+        public void SeedSampleData()
+        {
+            var sample = new[]
+            {
+                "Revista Científica Andina",
+                "Ingeniería y Desarrollo",
+                "Perspectivas de Salud Pública",
+                "Tecnologías Renovables",
+                "Estudios Latinoamericanos",
+                "Journal of Applied Physics (Español)",
+                "Revista de Matemáticas Puras",
+                "Ciencia, Cultura y Sociedad",
+                "Revista Electrónica de Robótica",
+                "Sistemas y Automatización",
+                "Biotecnología Actual",
+                "Economía, Empresa y Mercado"
+            };
+
+            foreach (var t in sample) AddTitle(t);
+        }
+
+        /// <summary>
+        /// Muestra el catálogo con índice.
+        /// </summary>
+        public void PrintCatalog()
+        {
+            Console.WriteLine("\n--- Catálogo de Revistas ---");
+            if (_titles.Count == 0) { Console.WriteLine("(vacío)"); return; }
+            for (int i = 0; i < _titles.Count; i++)
+            {
+                Console.WriteLine($"{i + 1:D2}. {_titles[i]}");
+            }
+        }
+
+        /// <summary>
+        /// Ordena el catálogo alfabéticamente usando la normalización.
+        /// </summary>
+        public void SortCatalog()
+        {
+            var pairs = _titles.Select(t => new { Orig = t, Norm = Normalize(t) })
+                               .OrderBy(p => p.Norm, StringComparer.Ordinal)
+                               .ToList();
+            _titles = pairs.Select(p => p.Orig).ToList();
+            _normalizedCache = pairs.Select(p => p.Norm).ToList();
+            IsSorted = true;
+        }
+
+        /// <summary>
+        /// Búsqueda lineal recursiva: wrapper que llama al método recursivo privado.
+        /// Complejidad O(n).
+        /// </summary>
+        public bool RecursiveSearch(string query)
+        {
+            if (string.IsNullOrWhiteSpace(query)) return false;
+            string normQuery = Normalize(query);
+            // Refrescar cache si hay discrepancia
+            if (_normalizedCache.Count != _titles.Count)
+                _normalizedCache = _titles.Select(t => Normalize(t)).ToList();
+
+            return RecursiveSearchAt(0, normQuery);
+        }
+
+        private bool RecursiveSearchAt(int index, string normQuery)
+        {
+            if (index >= _normalizedCache.Count) return false;
+            if (_normalizedCache[index] == normQuery) return true;
+            return RecursiveSearchAt(index + 1, normQuery);
+        }
+
+        /// <summary>
+        /// Búsqueda binaria iterativa sobre la lista normalizada (requiere Sorted catalog).
+        /// Complejidad O(log n).
+        /// </summary>
+        public bool IterativeBinarySearch(string query)
+        {
+            if (string.IsNullOrWhiteSpace(query) || _titles.Count == 0) return false;
+            string normQuery = Normalize(query);
+
+            // Asegúrate de tener cache normalizada y ordenada si IsSorted es true
+            if (_normalizedCache.Count != _titles.Count)
+                _normalizedCache = _titles.Select(t => Normalize(t)).ToList();
+
+            int low = 0;
+            int high = _normalizedCache.Count - 1;
+
+            while (low <= high)
+            {
+                int mid = low + ((high - low) / 2);
+                int cmp = StringComparer.Ordinal.Compare(_normalizedCache[mid], normQuery);
+                if (cmp == 0) return true;
+                if (cmp < 0) low = mid + 1;
+                else high = mid - 1;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Guarda el catálogo en un archivo de texto (unos títulos por línea).
+        /// </summary>
+        public void SaveToFile(string fileName)
+        {
+            try
+            {
+                System.IO.File.WriteAllLines(fileName, _titles);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error guardando archivo: " + ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Normaliza texto para comparación: remove diacríticos, trim, toLowerInvariant,
+        /// collapse multiple spaces.
+        /// </summary>
+        private static string Normalize(string input)
+        {
+            if (input == null) return string.Empty;
+            // 1) Trim and collapse whitespace
+            string s = Regex.Replace(input.Trim(), @"\s+", " ");
+            // 2) Normalize to FormD and remove diacritics
+            string formD = s.Normalize(NormalizationForm.FormD);
+            var sb = new StringBuilder();
+            foreach (var ch in formD)
+            {
+                var uc = CharUnicodeInfo.GetUnicodeCategory(ch);
+                if (uc != UnicodeCategory.NonSpacingMark)
+                    sb.Append(ch);
+            }
+            // 3) Lowercase invariant
+            string withoutDiacritics = sb.ToString().Normalize(NormalizationForm.FormC).ToLowerInvariant();
+            return withoutDiacritics;
+        }
+    }
+}

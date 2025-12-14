@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal del Cosmos Digital</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Estilos generales - Tema cósmico */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Exo 2', sans-serif;
+            background: linear-gradient(135deg, #0c0e2a 0%, #1a1b3a 50%, #0c0e2a 100%);
+            color: #e0e0ff;
+            line-height: 1.6;
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(41, 80, 152, 0.1) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(152, 41, 121, 0.1) 0%, transparent 20%);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Efectos de partículas y estrellas */
+        .particles, .constellation {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .particle {
+            position: absolute;
+            background: rgba(64, 156, 255, 0.6);
+            border-radius: 50%;
+            width: 4px;
+            height: 4px;
+            animation: float 8s infinite linear;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0) translateX(0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100px) translateX(20px); opacity: 0; }
+        }
+
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            width: 2px;
+            height: 2px;
+            animation: twinkle 3s infinite alternate;
+        }
+
+        @keyframes twinkle {
+            0% { opacity: 0.2; }
+            100% { opacity: 1; }
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(to right, rgba(16, 18, 54, 0.9), rgba(32, 35, 85, 0.9));
+            padding: 2.5rem 1.5rem;
+            text-align: center;
+            border-bottom: 3px solid #4a5fc1;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+            border-radius: 0 0 20px 20px;
+            box-shadow: 0 5px 20px rgba(74, 95, 193, 0.3);
+        }
+
+        header h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.8rem;
+            color: #6ee2ff;
+            text-shadow: 0 0 15px rgba(110, 226, 255, 0.7);
+            margin-bottom: 0.5rem;
+            letter-spacing: 2px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .subtitle {
+            font-size: 1.3rem;
+            color: #a9b4ff;
+            font-weight: 300;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Navegación */
+        nav {
+            background: rgba(22, 25, 65, 0.9);
+            border-radius: 15px;
+            padding: 1rem;
+            margin-bottom: 2.5rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            border: 1px solid #3a4a9c;
+            position: relative;
+            z-index: 2;
+        }
+
+        nav ul {
+            display: flex;
+            justify-content: center;
+            list-style: none;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+        }
+
+        nav a {
+            color: #8a9bff;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            padding: 0.8rem 1.5rem;
+            border-radius: 30px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(42, 46, 95, 0.5);
+        }
+
+        nav a:hover {
+            background: #4a5fc1;
+            color: #ffffff;
+            box-shadow: 0 0 15px rgba(74, 95, 193, 0.7);
+            transform: translateY(-3px);
+        }
+
+        /* Secciones principales */
+        section {
+            background: rgba(18, 21, 56, 0.8);
+            border-radius: 15px;
+            padding: 2.5rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #2a3a7a;
+            position: relative;
+            z-index: 1;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        h2 {
+            font-family: 'Orbitron', sans-serif;
+            color: #6ee2ff;
+            font-size: 2.2rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid #4a5fc1;
+            padding-bottom: 0.7rem;
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+        }
+
+        h3 {
+            color: #a9b4ff;
+            font-size: 1.6rem;
+            margin: 1.5rem 0 1rem;
+        }
+
+        p {
+            margin-bottom: 1.2rem;
+            font-size: 1.1rem;
+        }
+
+        strong {
+            color: #6ee2ff;
+            font-weight: 600;
+        }
+
+        em {
+            color: #ff9d6c;
+            font-style: italic;
+        }
+
+        /* Contenedor multimedia */
+        .media-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 2.5rem 0;
+        }
+
+        .img-container {
+            background: rgba(26, 29, 70, 0.9);
+            padding: 1.5rem;
+            border-radius: 10px;
+            border: 1px solid #3a4a9c;
+        }
+
+        .cosmic-image {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 2px solid #4a5fc1;
+            margin: 1rem 0;
+            transition: transform 0.5s ease;
+        }
+
+        .cosmic-image:hover {
+            transform: scale(1.02);
+        }
+
+
+        /* Listas */
+        .lists-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 1.5rem;
+        }
+
+        .ordered-list, .unordered-list {
+            background: rgba(26, 29, 70, 0.9);
+            padding: 1.5rem;
+            border-radius: 10px;
+            border-left: 5px solid #4a5fc1;
+        }
+
+        ol, ul {
+            padding-left: 1.5rem;
+            margin: 1rem 0;
+        }
+
+        li {
+            margin-bottom: 0.7rem;
+            padding-left: 0.5rem;
+        }
+
+        ol li {
+            color: #6ee2ff;
+        }
+
+        ul li {
+            color: #ff9d6c;
+        }
+
+        /* Tabla */
+        .table-section {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1.5rem;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        thead {
+            background: linear-gradient(to right, #2a3a7a, #4a5fc1);
+        }
+
+        th {
+            padding: 1.2rem;
+            text-align: left;
+            color: #ffffff;
+            font-weight: 600;
+            font-size: 1.1rem;
+            border-bottom: 3px solid #6ee2ff;
+        }
+
+        tbody tr {
+            background: rgba(26, 29, 70, 0.9);
+            transition: background 0.3s ease;
+        }
+
+        tbody tr:nth-child(even) {
+            background: rgba(34, 38, 85, 0.9);
+        }
+
+        tbody tr:hover {
+            background: rgba(74, 95, 193, 0.3);
+        }
+
+        td {
+            padding: 1rem 1.2rem;
+            border-bottom: 1px solid #3a4a9c;
+        }
+
+        /* Formulario */
+        .form-section {
+            background: linear-gradient(to bottom, rgba(18, 21, 56, 0.9), rgba(26, 29, 70, 0.9));
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #a9b4ff;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 0.9rem;
+            background: rgba(16, 18, 54, 0.8);
+            border: 1px solid #3a4a9c;
+            border-radius: 8px;
+            color: #e0e0ff;
+            font-family: 'Exo 2', sans-serif;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #6ee2ff;
+            box-shadow: 0 0 10px rgba(110, 226, 255, 0.5);
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+        }
+
+        .checkbox-group input {
+            width: auto;
+        }
+
+        .checkbox-group label {
+            margin-bottom: 0;
+        }
+
+        .submit-btn {
+            background: linear-gradient(to right, #4a5fc1, #6ee2ff);
+            color: #0c0e2a;
+            border: none;
+            padding: 1.2rem 2.5rem;
+            font-size: 1.2rem;
+            font-weight: 700;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.7rem;
+            margin: 2rem auto 0;
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 1px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(110, 226, 255, 0.4);
+        }
+
+        /* Enlace externo */
+        .external-link {
+            margin-top: 2.5rem;
+            padding: 1.5rem;
+            background: rgba(26, 29, 70, 0.9);
+            border-radius: 10px;
+            text-align: center;
+            border-left: 5px solid #ff9d6c;
+        }
+
+        .external-link a {
+            color: #6ee2ff;
+            font-weight: 700;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .external-link a:hover {
+            color: #ff9d6c;
+            text-shadow: 0 0 10px rgba(255, 157, 108, 0.5);
+        }
+
+        /* Footer */
+        footer {
+            background: linear-gradient(to right, #161941, #1a1d46);
+            padding: 2.5rem;
+            text-align: center;
+            border-top: 3px solid #4a5fc1;
+            margin-top: 3rem;
+            border-radius: 20px 20px 0 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        footer p {
+            margin-bottom: 0.8rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .footer-note {
+            color: #8a9bff;
+            font-size: 0.95rem;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .tech-icons {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 1.5rem;
+            font-size: 2.2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .tech-icons i {
+            color: #6ee2ff;
+            transition: all 0.3s ease;
+        }
+
+        .tech-icons i:hover {
+            color: #ff9d6c;
+            transform: translateY(-5px);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            nav ul {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            nav a {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            header h1 {
+                font-size: 2rem;
+            }
+            
+            h2 {
+                font-size: 1.8rem;
+            }
+            
+            section {
+                padding: 1.5rem;
+            }
+            
+            .media-container, .lists-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header con efecto de partículas -->
+        <header>
+            <div class="particles">
+                <div class="particle"></div>
+                <div class="particle"></div>
+                <div class="particle"></div>
+                <div class="particle"></div>
+                <div class="particle"></div>
+            </div>
+            <h1><i class="fas fa-star"></i> PORTAL DEL COSMOS DIGITAL <i class="fas fa-satellite"></i></h1>
+            <p class="subtitle">Explorando el universo a través del código</p>
+        </header>
+
+        <!-- Navegación con efecto neón -->
+        <nav>
+            <ul>
+                <li><a href="#inicio"><i class="fas fa-home"></i> Espacio Principal</a></li>
+                <li><a href="#galeria"><i class="fas fa-images"></i> Galería Estelar</a></li>
+                <li><a href="#datos"><i class="fas fa-chart-bar"></i> Datos Cósmicos</a></li>
+                <li><a href="#contacto"><i class="fas fa-envelope"></i> Contacto Interestelar</a></li>
+            </ul>
+        </nav>
+
+        <main>
+            <!-- Sección de introducción -->
+            <section id="inicio" class="intro-section">
+                <h2><i class="fas fa-rocket"></i> Bienvenido, Explorador Digital</h2>
+                <article>
+                    <p>En este portal, fusionamos el <strong>misterio del cosmos</strong> con la <strong>tecnología moderna</strong>. Cada línea de código es una estrella en nuestra galaxia digital.</p>
+                    <p><em>No somos simplemente observadores del universo; somos parte activa de su evolución digital.</em> Este espacio explora cómo la tecnología nos permite comprender realidades que escapan a nuestra percepción inmediata.</p>
+                </article>
+                
+                <div class="media-container">
+                    <div class="img-container">
+                        <h3><i class="fas fa-camera"></i> Ventana al Cosmos</h3>
+                        <img src="imagenes/androme.jpg"Galaxia espiral con estrellas brillantes y nebulosas multicolores" class="cosmic-image">
+                        <p class="img-caption">Galaxia Andrómeda observada desde el observatorio digital.</p>
+                    </div>
+                    
+                </div>
+            </section>
+
+            <!-- Sección de listas -->
+            <section id="galeria" class="lists-section">
+                <h2><i class="fas fa-list-alt"></i> Catálogos Cósmicos</h2>
+                <div class="lists-container">
+                    <article class="ordered-list">
+                        <h3><i class="fas fa-sort-numeric-up"></i> Fases de Exploración Digital</h3>
+                        <ol>
+                            <li>Reconocimiento del terreno digital</li>
+                            <li>Mapeo de constelaciones de datos</li>
+                            <li>Establecimiento de comunicación interplanetaria</li>
+                            <li>Análisis de anomalías espaciotemporales</li>
+                            <li>Transmisión de descubrimientos</li>
+                        </ol>
+                    </article>
+                    
+                    <article class="unordered-list">
+                        <h3><i class="fas fa-asterisk"></i> Fenómenos Observados</h3>
+                        <ul>
+                            <li>Agujeros negros digitales (compresión de datos)</li>
+                            <li>Supernovas de información (big data)</li>
+                            <li>Nebulosas de código (frameworks emergentes)</li>
+                            <li>Planetas con anillos (redes descentralizadas)</li>
+                            <li>Cúmulos estelares (clusters de servidores)</li>
+                        </ul>
+                    </article>
+                </div>
+            </section>
+
+            <!-- Sección de tabla -->
+            <section id="datos" class="table-section">
+                <h2><i class="fas fa-table"></i> Datos de Exploración</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Cuerpo Celeste Digital</th>
+                            <th>Tasa de Descubrimiento</th>
+                            <th>Nivel de Complejidad</th>
+                            <th>Estado Actual</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Framework Nebula</td>
+                            <td>Alta (78%)</td>
+                            <td>Intermedia</td>
+                            <td>En expansión</td>
+                        </tr>
+                        <tr>
+                            <td>API Constellation</td>
+                            <td>Muy Alta (92%)</td>
+                            <td>Avanzada</td>
+                            <td>Estable</td>
+                        </tr>
+                        <tr>
+                            <td>Database Black Hole</td>
+                            <td>Media (45%)</td>
+                            <td>Extrema</td>
+                            <td>En investigación</td>
+                        </tr>
+                        <tr>
+                            <td>UI Galaxy</td>
+                            <td>Alta (81%)</td>
+                            <td>Intermedia</td>
+                            <td>En evolución</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- Sección de formulario -->
+            <section id="contacto" class="form-section">
+                <h2><i class="fas fa-transmitter"></i> Estación de Contacto</h2>
+                <article>
+                    <p>¿Listo para unirte a la exploración? Envía tu señal a través del formulario interestelar.</p>
+                    
+                    <form id="contact-form">
+                        <div class="form-group">
+                            <label for="name"><i class="fas fa-user-astronaut"></i> Nombre del Explorador</label>
+                            <input type="text" id="name" name="name" required placeholder="Ingresa tu nombre de explorador">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="email"><i class="fas fa-envelope"></i> Correo de Contacto</label>
+                            <input type="email" id="email" name="email" required placeholder="tunombre@dominio.galaxia">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="mission"><i class="fas fa-bullseye"></i> Tipo de Misión</label>
+                            <select id="mission" name="mission">
+                                <option value="observacion">Observación Estelar</option>
+                                <option value="exploracion">Exploración Activa</option>
+                                <option value="investigacion">Investigación Profunda</option>
+                                <option value="comunicacion">Comunicación Interestelar</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="message"><i class="fas fa-comment-dots"></i> Mensaje de Contacto</label>
+                            <textarea id="message" name="message" rows="4" placeholder="Escribe tu mensaje interestelar aquí..."></textarea>
+                        </div>
+                        
+                        <div class="form-group checkbox-group">
+                            <input type="checkbox" id="subscribe" name="subscribe">
+                            <label for="subscribe">Deseo recibir actualizaciones sobre nuevos descubrimientos</label>
+                        </div>
+                        
+                        <button type="submit" class="submit-btn">
+                            <i class="fas fa-paper-plane"></i> Transmitir Señal
+                        </button>
+                    </form>
+                    
+                    <div class="external-link">
+                        <p>Para más recursos cósmicos, visita el <a href="https://www.nasa.gov/es/" target="_blank">Portal de la NASA <i class="fas fa-external-link-alt"></i></a>, nuestra principal referencia de exploración espacial.</p>
+                    </div>
+                </article>
+            </section>
+        </main>
+
+        <!-- Footer con efecto de constelación -->
+        <footer>
+            <div class="constellation">
+                <div class="star"></div>
+                <div class="star"></div>
+                <div class="star"></div>
+                <div class="star"></div>
+                <div class="star"></div>
+            </div>
+            <p>Portal del Cosmos Digital &copy; 2025 - Semana 3 Desarrollo de Aplicaciones Web</p>
+            <p class="footer-note">Este sitio es una fusión creativa de astronomía y desarrollo web, creado con HTML5, CSS3 y curiosidad galáctica.</p>
+            <div class="tech-icons">
+                <i class="fab fa-html5"></i>
+                <i class="fab fa-css3-alt"></i>
+                <i class="fab fa-js"></i>
+                <i class="fas fa-code"></i>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Efecto interactivo para el formulario
+        document.getElementById('contact-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('¡Señal transmitida con éxito! Tu mensaje interestelar está en camino.');
+            this.reset();
+        });
+
+        // Efecto de partículas en movimiento
+        document.addEventListener('DOMContentLoaded', function() {
+            const particles = document.querySelectorAll('.particle');
+            particles.forEach(particle => {
+                particle.style.animationDelay = `${Math.random() * 5}s`;
+            });
+            
+            const stars = document.querySelectorAll('.star');
+            stars.forEach(star => {
+                star.style.animationDelay = `${Math.random() * 3}s`;
+                star.style.left = `${Math.random() * 100}%`;
+            });
+        });
+    </script>
+</body>
+</html>
